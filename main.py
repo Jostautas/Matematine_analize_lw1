@@ -26,16 +26,22 @@ def eraseLeadingZeros(polynomialNumbers):
             return polynomialNumbers[index:7]
 
 
+def printFormula(cleanPolynomialNumbers):
+    formulaString = ""
+    power = len(cleanPolynomialNumbers) - 1
+    for number in cleanPolynomialNumbers[:len(cleanPolynomialNumbers) - 1]:
+        formulaString += f"{number}x^{power} + "
+        power -= 1
+    formulaString += f"{cleanPolynomialNumbers[-1]}"
+    print("The formula:")
+    print(formulaString)
+
+
 polynomialNumbers = enterPolynomial()
-
 print("input:", polynomialNumbers)
-
 cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
-formulaString = ""
-power = len(cleanPolynomialNumbers) - 1
-for number in cleanPolynomialNumbers[:len(cleanPolynomialNumbers)-1]:
-    formulaString += f"{number}x^{power} + "
-    power -= 1
-formulaString += f"{cleanPolynomialNumbers[-1]}"
-print("The formula:")
-print(formulaString)
+printFormula(cleanPolynomialNumbers)
+
+
+
+
