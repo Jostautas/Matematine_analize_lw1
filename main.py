@@ -68,8 +68,7 @@ def findFunctionZeroes(epsilon, n, step, window, cleanPolynomialNumbers):
             for a in range(n-1):
                 x0 = x1
                 x1 = newton(x0, cleanPolynomialNumbers)
-            print(x0, "  ", x1)
-            if (x1.real + x1.imag) - (x0.real + x0.imag) < epsilon:
+            if abs((x0.real + x0.imag) - (x1.real + x1.imag)) < epsilon:
                 xPoints.append(x)
                 yPoints.append(y)
             x += step
@@ -85,8 +84,8 @@ cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
 #printFormula(cleanPolynomialNumbers)
 
 EPSILON = 10**(-8)
-N = 20
-STEP = 0.1
+N = 8
+STEP = 0.04
 WINDOW = 2 # window size to every direction from starting coordinate (0, 0)
 
 # print(function(cleanPolynomialNumbers, complex(1, 1)))
@@ -103,7 +102,7 @@ npXPoints = np.array(xPoints)
 npYPoints = np.array(yPoints)
 
 
-plt.plot(npXPoints, npYPoints, 'ro')
+plt.plot(npXPoints, npYPoints, 'rs') # red square
 plt.show()
 
 
