@@ -76,21 +76,39 @@ def findFunctionZeroes(epsilon, n, step, window, cleanPolynomialNumbers):
 
     return xPoints, yPoints
 
+########
+def colorArray(x, y):
+    colArray = []
+    for i in range(len(xPoints)):
+        col = ""
+        if xPoints[i] > 0 and yPoints[i] > 0:
+            col = "blue"
+        elif xPoints[i] > 0 and yPoints[i] < 0:
+            col = "red"
+        elif xPoints[i] < 0 and yPoints[i] > 0:
+            col = "green"
+        elif xPoints[i] < 0 and yPoints[i] < 0:
+            col = "black"
+        else:
+            col = "yellow"
+        #print("i = " + str(i) + " x = " + str(xPoints[i]) + " y = " + str(yPoints[i]) + " color = " + col)
+        colArray.append(col)
+    return colArray
+########
 
 
 polynomialNumbers = enterPolynomial()
 print("input:", polynomialNumbers)
 cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
-#printFormula(cleanPolynomialNumbers)
+printFormula(cleanPolynomialNumbers)
 
 EPSILON = 10**(-8)
 N = 8
 STEP = 0.04
 WINDOW = 2 # window size to every direction from starting coordinate (0, 0)
 
-# print(function(cleanPolynomialNumbers, complex(1, 1)))
-# print(functionDerivative(cleanPolynomialNumbers, complex(1, 1)))
-
+#print(function(cleanPolynomialNumbers, complex(1, 1)))
+#print(functionDerivative(cleanPolynomialNumbers, complex(1, 1)))
 
 
 xPoints, yPoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialNumbers)
@@ -101,13 +119,14 @@ xPoints, yPoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialN
 npXPoints = np.array(xPoints)
 npYPoints = np.array(yPoints)
 
+colorArray = np.array(colorArray(xPoints, yPoints))
 
-plt.plot(npXPoints, npYPoints, 'rs') # red square
+plt.scatter(npXPoints, npYPoints, c = colorArray)
 plt.show()
 
 
 # z = complex(1, -1)
-#
+
 # print(z)
 # print(z.real)
 # print(z.imag)
