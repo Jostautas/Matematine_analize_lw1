@@ -82,39 +82,47 @@ def findFunctionZeroes(epsilon, n, step, window, cleanPolynomialNumbers):
     return xPoints, yPoints, convergencePoints
 
 
-polynomialNumbers = enterPolynomial()
-print("input:", polynomialNumbers)
-cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
-#printFormula(cleanPolynomialNumbers)
+def getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints):
+    points = list(zip(xPoints, yPoints, convergencePoints))  # points = [(x, y, (r,i))] (make an array of tuples)
+
+    # set() stores only unique elements
+    uniqueConvergencePoints = set(convergencePoints)
+    # convert back to list, so that we can index items:
+    uniqueConvergencePoints = list(uniqueConvergencePoints)
+
+    # give a color to every point
+    colorArray = []
+    for point in points:
+        convPoint = point[2]
+        for i in range(
+                len(uniqueConvergencePoints)):  # go through every of our convergencePoint and check which index of it corresponds to the convergent point in our points array
+            if convPoint == uniqueConvergencePoints[i]:
+                colorArray.append(colors[i])
+                break
+
+    return colorArray
+
+
+def plot(xPoints, yPoints, colorArray):
+    npXPoints = np.array(xPoints)
+    npYPoints = np.array(yPoints)
+    plt.scatter(npXPoints, npYPoints, c=colorArray)
+    plt.show()
+
 
 EPSILON = 10**(-8)
 N = 8
 STEP = 0.04
 WINDOW = 2 # window size to every direction from starting coordinate (0, 0)
+colors = ["red", "blue", "yellow", "green", "magenta", "brown"]
+
+
+polynomialNumbers = enterPolynomial()
+cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
+# printFormula(cleanPolynomialNumbers)
 
 xPoints, yPoints, convergencePoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialNumbers)
 
-colors = ["red", "blue", "yellow", "green", "magenta", "brown"]
+colorArray = getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints)
 
-points = list(zip(xPoints, yPoints, convergencePoints))  # points = [(x, y, (r,i))] (make an array of tuples)
-
-# set() stores only unique elements
-uniqueConvergencePoints = set(convergencePoints)
-# convert back to list, so that we can index items:
-uniqueConvergencePoints = list(uniqueConvergencePoints)
-
-# give a color to every point
-colorArray = []
-for point in points:
-    convPoint = point[2]
-    for i in range(len(uniqueConvergencePoints)): # go through every of our convergencePoint and check which index of it corresponds to the convergent point in our points array
-        if convPoint == uniqueConvergencePoints[i]:
-            colorArray.append(colors[i])
-            break
-
-
-npXPoints = np.array(xPoints)
-npYPoints = np.array(yPoints)
-plt.scatter(npXPoints, npYPoints, c=colorArray)
-plt.show()
-
+plot(xPoints, yPoints, colorArray)
