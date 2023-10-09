@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import numpy as np
 
 
@@ -60,74 +61,68 @@ def findFunctionZeroes(epsilon, n, step, window, cleanPolynomialNumbers):
     xPoints = []
     yPoints = []
 
+    convergencePoints = []
+
     y = window
-    while y > -window:
+    while y >= -window:  # from top to bottom
         x = -window
-        while x < window:
+        while x <= window:  # from left to right
             x1 = complex(x, y)
-            for a in range(n-1):
+            for a in range(n-1):  # loop for n iterations
                 x0 = x1
                 x1 = newton(x0, cleanPolynomialNumbers)
             if abs((x0.real + x0.imag) - (x1.real + x1.imag)) < epsilon:
-                xPoints.append(x)
+                xPoints.append(x) # (x, y) is the point that converges to the function zero (the x0)
                 yPoints.append(y)
+                convPoint = complex(round(x0.real, 3), round(x0.imag, 3))
+                convergencePoints.append(convPoint)
             x += step
         y -= step
 
-    return xPoints, yPoints
-
-########
-def colorArray(x, y):
-    colArray = []
-    for i in range(len(xPoints)):
-        col = ""
-        if xPoints[i] > 0 and yPoints[i] > 0:
-            col = "blue"
-        elif xPoints[i] > 0 and yPoints[i] < 0:
-            col = "red"
-        elif xPoints[i] < 0 and yPoints[i] > 0:
-            col = "green"
-        elif xPoints[i] < 0 and yPoints[i] < 0:
-            col = "black"
-        else:
-            col = "yellow"
-        #print("i = " + str(i) + " x = " + str(xPoints[i]) + " y = " + str(yPoints[i]) + " color = " + col)
-        colArray.append(col)
-    return colArray
-########
+    return xPoints, yPoints, convergencePoints
 
 
-polynomialNumbers = enterPolynomial()
-print("input:", polynomialNumbers)
-cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
-printFormula(cleanPolynomialNumbers)
+def getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints):
+    points = list(zip(xPoints, yPoints, convergencePoints))  # points = [(x, y, (r,i))] (make an array of tuples)
+
+    # set() stores only unique elements
+    uniqueConvergencePoints = set(convergencePoints)
+    # convert back to list, so that we can index items:
+    uniqueConvergencePoints = list(uniqueConvergencePoints)
+
+    # give a color to every point
+    colorArray = []
+    for point in points:
+        convPoint = point[2]
+        for i in range(
+                len(uniqueConvergencePoints)):  # go through every of our convergencePoint and check which index of it corresponds to the convergent point in our points array
+            if convPoint == uniqueConvergencePoints[i]:
+                colorArray.append(colors[i])
+                break
+
+    return colorArray
+
+
+def plot(xPoints, yPoints, colorArray):
+    npXPoints = np.array(xPoints)
+    npYPoints = np.array(yPoints)
+    plt.scatter(npXPoints, npYPoints, c=colorArray)
+    plt.show()
+
 
 EPSILON = 10**(-8)
 N = 8
 STEP = 0.04
 WINDOW = 2 # window size to every direction from starting coordinate (0, 0)
-
-#print(function(cleanPolynomialNumbers, complex(1, 1)))
-#print(functionDerivative(cleanPolynomialNumbers, complex(1, 1)))
+colors = ["red", "blue", "yellow", "green", "magenta", "brown"]
 
 
-xPoints, yPoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialNumbers)
+polynomialNumbers = enterPolynomial()
+cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
+# printFormula(cleanPolynomialNumbers)
 
-# print(xPoints)
-# print(yPoints)
+xPoints, yPoints, convergencePoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialNumbers)
 
-npXPoints = np.array(xPoints)
-npYPoints = np.array(yPoints)
+colorArray = getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints)
 
-colorArray = np.array(colorArray(xPoints, yPoints))
-
-plt.scatter(npXPoints, npYPoints, c = colorArray)
-plt.show()
-
-
-# z = complex(1, -1)
-
-# print(z)
-# print(z.real)
-# print(z.imag)
-# print(z**5)
+plot(xPoints, yPoints, colorArray)
