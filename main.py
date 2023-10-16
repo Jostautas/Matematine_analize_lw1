@@ -1,19 +1,46 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
+import tkinter as tk
+from tkinter import Entry, Button, Label
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+entry_fields = []  # Define entry_fields only once
 
-def enterPolynomial():
-    polynomialNumbers = []
-    for x in range(7):
-        stringInput = input(f"Enter polynomial number of index {x + 1} (counting from left):")
-        try:
-            intInput = int(stringInput)
-            polynomialNumbers.append(intInput)
-        except ValueError:
-            print("Invalid integer!")
-    return polynomialNumbers
+# Constants and colors
+N = 15
+EPSILON = 1e-8
+STEP = 0.04
+WINDOW = 2
+colors = ["red", "blue", "yellow", "green", "magenta", "brown"]
 
+# Function to update the constants
+def update_constants():
+    global N, EPSILON, STEP
+    N = int(entry_n.get())
+    EPSILON = float(entry_epsilon.get())
+    STEP = float(entry_step.get())
+
+def plot_polynomial_graph():
+    polynomial_numbers = [int(entry_fields[i].get()) for i in range(7)]
+    clean_polynomial_numbers = eraseLeadingZeros(polynomial_numbers)
+
+    update_constants()  # Update constants from input fields
+
+    x_points, y_points, convergence_points = findFunctionZeroes(
+        EPSILON, N, STEP, WINDOW, clean_polynomial_numbers)
+
+    color_array = getColorArrayForScatterPlot(x_points, y_points, convergence_points)
+
+    np_x_points = np.array(x_points)
+    np_y_points = np.array(y_points)
+
+    scatter_plot.set_offsets(np.column_stack((np_x_points, np_y_points)))
+    scatter_plot.set_array(np.array(color_array))
+    ax.relim()
+    ax.autoscale_view()
+    
 
 def eraseLeadingZeros(polynomialNumbers):
     for index in range(7):
@@ -109,20 +136,76 @@ def plot(xPoints, yPoints, colorArray):
     plt.scatter(npXPoints, npYPoints, c=colorArray)
     plt.show()
 
+def plot_polynomial_graph():
+    polynomial_numbers = [int(entry_fields[i].get()) for i in range(7)]
+    clean_polynomial_numbers = eraseLeadingZeros(polynomial_numbers)
 
-EPSILON = 10**(-8)
-N = 8
-STEP = 0.04
-WINDOW = 2 # window size to every direction from starting coordinate (0, 0)
-colors = ["red", "blue", "yellow", "green", "magenta", "brown"]
+    x_points, y_points, convergence_points = findFunctionZeroes(
+        EPSILON, N, STEP, WINDOW, clean_polynomial_numbers)
+    
+    color_array = getColorArrayForScatterPlot(x_points, y_points, convergence_points)
 
+    np_x_points = np.array(x_points)
+    np_y_points = np.array(y_points)
 
-polynomialNumbers = enterPolynomial()
-cleanPolynomialNumbers = eraseLeadingZeros(polynomialNumbers)
-# printFormula(cleanPolynomialNumbers)
+    plt.scatter(np_x_points, np_y_points, c=color_array)
+    plt.show()
 
-xPoints, yPoints, convergencePoints = findFunctionZeroes(EPSILON, N, STEP, WINDOW, cleanPolynomialNumbers)
+# Create the main window
+root = tk.Tk()
+root.title("Newton's Method Visualization")
 
-colorArray = getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints)
+# Entry fields for polynomial parameters
+label = Label(root, text=f"POLYNOM", font="bald")
+label.grid(row=0, column=0)
 
-plot(xPoints, yPoints, colorArray)
+for i in range(7):
+    label = Label(root, text=f"Coefficient {i + 1}:")
+    label.grid(row=i + 1, column=0)
+    entry = Entry(root)
+    entry.grid(row=i + 1, column=1)
+    entry_fields.append(entry)
+
+label = Label(root, text=f"CONSTANTS", font="bald")
+label.grid(row=8, column=0)
+
+# Entry fields for constant values
+label_n = Label(root, text=f"N:")
+label_n.grid(row=9, column=0)
+entry_n = Entry(root)
+entry_n.grid(row=9, column=1)
+entry_n.insert(0, str(N))
+
+label_epsilon = Label(root, text=f"EPSILON:")
+label_epsilon.grid(row=10, column=0)
+entry_epsilon = Entry(root)
+entry_epsilon.grid(row=10, column=1)
+entry_epsilon.insert(0, str(EPSILON))
+
+label_step = Label(root, text=f"STEP:")
+label_step.grid(row=11, column=0)
+entry_step = Entry(root)
+entry_step.grid(row=11, column=1)
+entry_step.insert(0, str(STEP))
+
+label = Label(root, text=f"")
+label.grid(row=12, column=0)
+
+# Button to plot the graph
+plot_button = Button(root, text="Plot Graph", command=plot_polynomial_graph)
+plot_button.grid(row=13, column=0, columnspan=2)
+
+# Create a Matplotlib Figure and an Axes object for the colorbar
+fig = Figure()
+ax = fig.add_subplot(111)
+
+# Create an initial scatter plot (empty)
+scatter_plot = ax.scatter([], [], c=[], cmap="jet")
+ax.set_xlim(-WINDOW, WINDOW)
+ax.set_ylim(-WINDOW, WINDOW)
+
+# Create a colorbar
+colorbar = fig.colorbar(scatter_plot, ax=ax)
+colorbar.set_label("Convergence")
+
+root.mainloop()
