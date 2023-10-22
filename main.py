@@ -11,21 +11,29 @@ entryFields = []
 
 # Constants and colors
 # N = 30
-EPSILON = 1e-8
+EPSILON = 1e-6
 # STEP = 0.03
 WINDOW = 2
-colors = ["red", "blue", "yellow", "green", "magenta", "lime", "purple", "aqua"]
+colors = ["red", "blue", "yellow", "green", "magenta", "lime", "purple", "aqua", "pink", "cyan", "olive"]
 
 # Function to erase leading zeros in the polynomial numbers
 def eraseLeadingZeros(PolynomlialNumbers):
     return PolynomlialNumbers[next((i for i, x in enumerate(PolynomlialNumbers) if x != 0), 7):]
+
+def custom_complex_exponentiation(x, power):
+    try:
+        result = x**power
+        return result
+    except OverflowError:
+        # Handle overflow cases gracefully
+        return complex(float('inf'), 0.0)
 
 # Function to calculate the function value at a given point
 def function(PolynomlialNumbers, x):
     result = 0.0
     power = len(PolynomlialNumbers) - 1
     for number in PolynomlialNumbers[:len(PolynomlialNumbers) - 1]:
-        result += number * x**power
+        result += number * custom_complex_exponentiation(x, power)
         power -= 1
     result += PolynomlialNumbers[-1]
     return result
@@ -35,7 +43,7 @@ def functionDerivative(PolynomlialNumbers, x):
     result = 0.0
     power = len(PolynomlialNumbers) - 1
     for number in PolynomlialNumbers[:len(PolynomlialNumbers) - 2]:
-        result += number * power * x**(power-1)
+        result += number * power * custom_complex_exponentiation(x, power - 1)
         power -= 1
     result += PolynomlialNumbers[-2]
     return result
@@ -65,14 +73,15 @@ def findFunctionZeroes(epsilon, n, step, window, cleanPolynomialNumbers):
                 convergencePoints.append(convPoint)
             x += step
         y -= step
-
+        
     return xPoints, yPoints, convergencePoints
 
 # Function to assign colors for the scatter plot
-def getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints):
+def getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints, roots):
     points = list(zip(xPoints, yPoints, convergencePoints))
-    uniqueConvergencePoints = set(convergencePoints)
-    uniqueConvergencePoints = list(uniqueConvergencePoints)
+    # uniqueConvergencePoints = set(convergencePoints)
+    # uniqueConvergencePoints = list(uniqueConvergencePoints)
+    uniqueConvergencePoints = roots
     colorArray = []
     for point in points:
         convPoint = point[2]
@@ -153,10 +162,17 @@ def plotPolynomialGraph():
     n = int(entryN.get())
     step = float(entryStep.get())
     PolynomlialNumbers = [float(entryFields[i].get()) for i in range(7)]
+    
+    coefficientsArray = PolynomlialNumbers
+    roots = np.roots(coefficientsArray)
+    roots = set(roots)
+    rounded_roots = [complex(round(root.real, 3), round(root.imag, 3)) for root in roots]
+    
     cleanPolynomialNumbers = eraseLeadingZeros(PolynomlialNumbers)
     xPoints, yPoints, convergencePoints = findFunctionZeroes(EPSILON, n, step, WINDOW, cleanPolynomialNumbers)
-    colorArray = getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints)
 
+    colorArray = getColorArrayForScatterPlot(xPoints, yPoints, convergencePoints, rounded_roots)
+    
     colorNumericValues = [colors.index(color) for color in colorArray]
 
     scatterPlot.set_offsets(np.column_stack((xPoints, yPoints)))
@@ -166,13 +182,13 @@ def plotPolynomialGraph():
     # Add the "x =" strings with convergence points
     convergenceText.delete('1.0', tk.END)
     convergenceText.insert(tk.END, "Convergence Points:\n")
-    for point in convergencePoints:
+    for root in roots:
+        realPart = round(root.real, 3)
+        imagPart = round(root.imag, 3)
+        complexRoot = complex(realPart, imagPart)
         text = convergenceText.get("1.0", "end-1c")
-        if text.find(str(point)) == -1:
-            convergenceText.insert(tk.END, f"x = {point}\n")
-        else:
-            continue
-
+        convergenceText.insert(tk.END, f"x = {complexRoot}\n")
+        
     canvas.draw()
 
 # Button to plot the graph
